@@ -871,24 +871,34 @@
             requestAnimationFrame(animate);
         }
 
-        // Nhạc nền: phát music.mp3 khi chạm lần đầu, không có file thì dùng âm thanh nhịp tim
+        // Nhạc nền: thử tự phát ngay; nếu trình duyệt chặn thì phát ở lần chạm/nhấn phím đầu tiên
         const bgMusic = document.getElementById('bgMusic');
         const tapHint = document.getElementById('tapHint');
+        const unlockEvents = ['click', 'touchend', 'keydown'];
         bgMusic.volume = 0.8;
 
-        const startMusicOnFirstTap = () => {
-            document.removeEventListener('pointerdown', startMusicOnFirstTap);
-            tapHint.style.opacity = '0';
-            setTimeout(() => tapHint.remove(), 600);
-
-            bgMusic.play().catch(() => initAudioWithFeedback());
-        };
-        bgMusic.addEventListener('error', () => {
-            if (!tapHint.isConnected) {
-                initAudioWithFeedback();
+        const onMusicStarted = () => {
+            unlockEvents.forEach(evt => document.removeEventListener(evt, tryPlayMusic));
+            if (tapHint) {
+                tapHint.style.opacity = '0';
+                setTimeout(() => tapHint.remove(), 600);
             }
-        });
-        document.addEventListener('pointerdown', startMusicOnFirstTap);
+        };
+
+        function tryPlayMusic() {
+            bgMusic.play()
+                .then(onMusicStarted)
+                .catch(err => {
+                    console.warn('Chưa phát được nhạc:', err.name, err.message);
+                    // Không có/không đọc được file nhạc thì dùng âm thanh nhịp tim
+                    if (err.name === 'NotSupportedError' && navigator.userActivation?.isActive) {
+                        initAudioWithFeedback();
+                    }
+                });
+        }
+
+        unlockEvents.forEach(evt => document.addEventListener(evt, tryPlayMusic));
+        tryPlayMusic();
 
         // Bắt đầu animation
         requestAnimationFrame(animate);
