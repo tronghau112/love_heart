@@ -32,16 +32,6 @@
             text-shadow: 0 0 10px #ff69b4;
             z-index: 100;
         }
-        .controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 14px;
-            text-align: center;
-            z-index: 100;
-        }
         .tap-hint {
             position: fixed;
             top: 60px;
@@ -66,23 +56,18 @@
     <div class="title">💗💗💗</div>
     <canvas id="heartCanvas"></canvas>
     <audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
-    <!-- <div class="controls">
-        Giữ phím ← → để xoay | Tự động đập | Chạm màn hình để tạo sao và tim | Mưa sao băng trái tim
-    </div> -->
 
     <script>
         let audioContext = null;
         let lastHeartbeatTime = 0;
-        let heartbeatThreshold = 0.75; // Giảm ngưỡng kích hoạt nhịp tim, dễ kích hoạt hơn
+        let heartbeatThreshold = 0.75;
 
-        // Cách khởi tạo âm thanh tốt hơn
         function initAudioWithFeedback() {
             try {
                 if (!audioContext) {
                     audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     console.log('Đã khởi tạo audio context');
                     
-                    // Phát thử một âm thanh nhịp tim
                     setTimeout(() => {
                         if (audioContext) {
                             playHeartbeat();
@@ -97,16 +82,13 @@
             }
         }
 
-        // Âm thanh nhịp tim đơn giản (ổn định hơn)
         function playHeartbeat() {
             if (!audioContext) return;
             
             const now = audioContext.currentTime;
             
-            // Tiếng thứ nhất "lub" - âm trầm hơn
             createSimpleHeartbeat(now, 80, 0.1, 0.2);
             
-            // Tiếng thứ hai "dub" - âm cao hơn chút, trễ 150ms
             setTimeout(() => {
                 if (audioContext) {
                     createSimpleHeartbeat(audioContext.currentTime, 120, 0.08, 0.15);
@@ -114,21 +96,17 @@
             }, 150);
         }
 
-        // Hàm tạo âm thanh nhịp tim đơn giản
         function createSimpleHeartbeat(startTime, baseFreq, volume, duration) {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
-            // Kết nối âm thanh đơn giản
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            // Đặt tần số nhịp tim
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(baseFreq, startTime);
             oscillator.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, startTime + duration);
             
-            // Đặt đường bao âm lượng
             gainNode.gain.setValueAtTime(0, startTime);
             gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.02);
             gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
@@ -137,7 +115,6 @@
             oscillator.stop(startTime + duration);
         }
 
-        // Tạo buffer hiệu ứng vang
         function createReverbBuffer(duration, decay) {
             const sampleRate = audioContext.sampleRate;
             const length = sampleRate * duration;
@@ -153,13 +130,11 @@
             return impulse;
         }
 
-        // Phiên bản 2: nhịp tim phong cách mơ màng (dự phòng)
         function playDreamyHeartbeat() {
             if (!audioContext) return;
             
             const now = audioContext.currentTime;
             
-            // Tạo âm thanh nhiều lớp
             for (let i = 0; i < 3; i++) {
                 const delay = i * 0.02;
                 const freq = 60 + i * 15;
@@ -180,31 +155,25 @@
             const delay = audioContext.createDelay();
             const delayGain = audioContext.createGain();
             
-            // Định tuyến âm thanh
             oscillator.connect(filter);
             filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            // Thêm hiệu ứng delay
             gainNode.connect(delay);
             delay.connect(delayGain);
             delayGain.connect(gainNode);
             
-            // Cài đặt hiệu ứng delay
             delay.delayTime.setValueAtTime(0.1, startTime);
             delayGain.gain.setValueAtTime(0.2, startTime);
             
-            // Cài đặt bộ lọc
             filter.type = 'bandpass';
             filter.frequency.setValueAtTime(frequency * 2, startTime);
             filter.Q.setValueAtTime(3, startTime);
             
-            // Dùng sóng tam giác, mềm mại hơn
             oscillator.type = 'triangle';
             oscillator.frequency.setValueAtTime(frequency, startTime);
             oscillator.frequency.linearRampToValueAtTime(frequency * 0.8, startTime + 0.2);
             
-            // Đường bao âm lượng mềm mại
             gainNode.gain.setValueAtTime(0, startTime);
             gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.05);
             gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
@@ -213,14 +182,12 @@
             oscillator.stop(startTime + 0.4);
         }
 
-        // Phiên bản 3: nhịp tim phong cách piano (thanh lịch)
         function playPianoHeartbeat() {
             if (!audioContext) return;
             
             const now = audioContext.currentTime;
             
-            // Phát nhịp tim dạng hợp âm
-            const notes = [110, 138.59, 164.81]; // Hợp âm A2, C#3, E3
+            const notes = [110, 138.59, 164.81];
             
             notes.forEach((freq, index) => {
                 setTimeout(() => {
@@ -232,7 +199,6 @@
         }
 
         function createPianoNote(startTime, frequency, volume) {
-            // Sóng tổng hợp mô phỏng âm sắc piano
             const fundamental = audioContext.createOscillator();
             const harmonic2 = audioContext.createOscillator();
             const harmonic3 = audioContext.createOscillator();
@@ -242,11 +208,9 @@
             const gain3 = audioContext.createGain();
             const masterGain = audioContext.createGain();
             
-            // Kết nối âm cơ bản
             fundamental.connect(gainNode);
             gainNode.connect(masterGain);
             
-            // Kết nối bồi âm
             harmonic2.connect(gain2);
             gain2.connect(masterGain);
             harmonic3.connect(gain3);
@@ -254,28 +218,23 @@
             
             masterGain.connect(audioContext.destination);
             
-            // Đặt tần số
             fundamental.frequency.setValueAtTime(frequency, startTime);
             harmonic2.frequency.setValueAtTime(frequency * 2, startTime);
             harmonic3.frequency.setValueAtTime(frequency * 3, startTime);
             
-            // Đặt âm sắc
             fundamental.type = 'triangle';
             harmonic2.type = 'sine';
             harmonic3.type = 'sine';
             
-            // Đặt âm lượng từng bè
             gainNode.gain.setValueAtTime(volume, startTime);
             gain2.gain.setValueAtTime(volume * 0.3, startTime);
             gain3.gain.setValueAtTime(volume * 0.1, startTime);
             
-            // Đường bao âm lượng kiểu piano
             masterGain.gain.setValueAtTime(0, startTime);
             masterGain.gain.linearRampToValueAtTime(1, startTime + 0.01);
             masterGain.gain.exponentialRampToValueAtTime(0.3, startTime + 0.1);
             masterGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6);
             
-            // Khởi động tất cả oscillator
             fundamental.start(startTime);
             harmonic2.start(startTime);
             harmonic3.start(startTime);
@@ -288,11 +247,9 @@
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Đặt kích thước canvas
         canvas.width = 800;
         canvas.height = 600;
         
-        // Định nghĩa hằng số
         const WIDTH = 800;
         const HEIGHT = 600;
         const BLACK = [0, 0, 0];
@@ -302,13 +259,11 @@
         const GALAXY_COLORS = [[180, 200, 255], [120, 160, 255], [255, 255, 255], [200, 120, 255]];
         const STAR_COLORS = [[255, 255, 255], [255, 255, 180], [180, 255, 255], [255, 180, 255], [180, 255, 180]];
         
-        // Biến toàn cục
         let angleY = 0;
         let pulse = 0;
         let lastTime = 0;
         let keys = {};
         
-        // Kiểm tra có nằm trong trái tim 3D không
         function isIn3DHeart(x, z, y) {
             const scale = 0.7;
             x = x / scale;
@@ -319,7 +274,6 @@
             return value <= 0;
         }
         
-        // Hàm chọn ngẫu nhiên
         function randomChoice(arr, weights = null) {
             if (!weights) {
                 return arr[Math.floor(Math.random() * arr.length)];
@@ -333,11 +287,10 @@
             return arr[arr.length - 1];
         }
         
-        // Bó hoa 3D: các hạt trái tim tụ lại thành bó hoa hồng đỏ, tulip trắng, hoa baby, giấy gói và nơ
         const BOUQUET_TILT = 0.25;
         const HEART_HOLD = 4, MORPH_TIME = 2, BOUQUET_HOLD = 4;
         const MORPH_CYCLE = HEART_HOLD + MORPH_TIME + BOUQUET_HOLD + MORPH_TIME;
-        let morph = 0; // 0 = trái tim, 1 = bó hoa
+        let morph = 0;
 
         const DOME_CENTER_Y = 1.0;
         const DOME_RADIUS_XZ = 6.5;
@@ -387,7 +340,6 @@
             return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x };
         }
 
-        // Điểm trên mái vòm hoa (nửa elip dẹt), polar = góc so với trục đứng
         function domePoint(polar, azimuth, lift = 0) {
             const n = { x: Math.sin(polar) * Math.cos(azimuth), y: Math.cos(polar), z: Math.sin(polar) * Math.sin(azimuth) };
             return {
@@ -400,7 +352,6 @@
             };
         }
 
-        // Rải đều n điểm trên mái vòm theo xoắn Fibonacci
         function domeSpots(count, phase) {
             const spots = [];
             for (let i = 0; i < count; i++) {
@@ -413,7 +364,6 @@
         const ROSE_SPOTS = domeSpots(15, 0);
         const TULIP_SPOTS = domeSpots(7, 1.3);
 
-        // Đặt điểm (lx, ly) trên mặt phẳng tiếp tuyến, lh dọc theo pháp tuyến
         function placeOnFrame(origin, normal, lx, ly, lh) {
             const helper = Math.abs(normal.y) > 0.9 ? { x: 0, y: 0, z: 1 } : { x: 0, y: 1, z: 0 };
             const t1 = normalize(cross(helper, normal));
@@ -425,7 +375,6 @@
             };
         }
 
-        // Hoa hồng nhìn từ trên: cánh xoắn ốc ở giữa, viền cánh lượn sóng bên ngoài
         function sampleRose() {
             const spot = randomChoice(ROSE_SPOTS);
             const { pos, normal } = domePoint(spot.polar, spot.azimuth);
@@ -450,7 +399,6 @@
             return { ...placeOnFrame(pos, normal, lx, ly, lh), color, size: 1 };
         }
 
-        // Tulip trắng: búp hình trứng 3 cánh nhô cao hơn hoa hồng
         function sampleTulip() {
             const spot = randomChoice(TULIP_SPOTS);
             const { pos, normal } = domePoint(spot.polar, spot.azimuth, 0.6);
@@ -466,7 +414,6 @@
             return { ...point, color: randomChoice(WHITE_FLOWER), size: 0.9 };
         }
 
-        // Hoa baby: những chùm chấm trắng nhỏ rải giữa bó
         function sampleBabyBreath() {
             const polar = Math.random() * DOME_MAX_POLAR * 0.75;
             const azimuth = Math.random() * Math.PI * 2;
@@ -480,7 +427,6 @@
             return { ...pos, color: randomChoice(LEAF_GREENS), size: 0.9 };
         }
 
-        // Giấy gói hình phễu: phía sau cao, phía trước thấp, mép trên lượn sóng theo từng tấm giấy
         function sampleWrapper() {
             const pick = Math.random();
             const onFold = pick < 0.1;
@@ -498,7 +444,6 @@
             return { x: r * Math.cos(phi), y: lerp(TIE_Y, topY, u), z: r * Math.sin(phi), color, size: 1 };
         }
 
-        // Phần giấy dưới nơ xòe ra, mép dưới so le
         function sampleSkirt() {
             const phi = Math.random() * Math.PI * 2;
             const s = Math.random();
@@ -507,7 +452,6 @@
             return { x: r * Math.cos(phi), y, z: r * Math.sin(phi), color: s > 0.95 ? PAPER_RIM : PAPER, size: 1 };
         }
 
-        // Nơ đỏ: dải buộc quanh cổ, hai quai nơ và hai đuôi ruy băng phía trước
         function sampleRibbon() {
             const pick = Math.random();
             const color = randomChoice(RIBBON_REDS);
@@ -549,12 +493,10 @@
             return sampleRibbon();
         }
 
-        // Lớp hạt
         class Particle {
             constructor() {
                 this.reset();
                 this.target = sampleBouquetPoint();
-                // hướng bay tán ra khi đang chuyển hình
                 const a = Math.random() * Math.PI * 2;
                 const b = Math.acos(Math.random() * 2 - 1);
                 this.scatter = { x: Math.sin(b) * Math.cos(a), y: Math.sin(b) * Math.sin(a), z: Math.cos(b) };
@@ -592,7 +534,6 @@
                 const heartX = this.x * cosY + this.z * sinY;
                 const heartZ = -this.x * sinY + this.z * cosY;
 
-                // Bó hoa chỉ đung đưa nhẹ (mặt trước luôn hướng về người xem) và nghiêng để thấy mặt hoa
                 const sway = 0.4 * Math.sin(lastTime * 0.0005);
                 const cosS = Math.cos(sway);
                 const sinS = Math.sin(sway);
@@ -606,7 +547,6 @@
                 const yRot = lerp(this.y, flowerY, morph) + this.scatter.y * spread;
                 const zRot = lerp(heartZ, flowerZ, morph) + this.scatter.z * spread;
 
-                // Tim đập theo nhịp, hoa chỉ "thở" nhẹ
                 const flowerBreath = 1 + 0.02 * Math.sin(lastTime * 0.0015);
                 const scale = 25 * lerp(pulseScale, flowerBreath, morph);
                 const distance = 20;
@@ -646,7 +586,6 @@
             }
         }
         
-        // Lớp hạt dải ngân hà
         class GalaxyParticle {
             constructor() {
                 this.x = Math.random() * WIDTH;
@@ -686,7 +625,6 @@
             }
         }
         
-        // Lớp hạt rơi
         class ParticleDrop {
             constructor(heartParticles, angleY, pulse) {
                 const sourceParticle = heartParticles[Math.floor(Math.random() * heartParticles.length)];
@@ -722,7 +660,6 @@
             }
             
             draw(ctx) {
-                // Vẽ vệt đuôi
                 this.trail.forEach((point, index) => {
                     const fade = point.alpha * (index + 1) / this.trail.length;
                     const size = Math.max(1, point.size * (index + 1) / this.trail.length);
@@ -736,7 +673,6 @@
                     ctx.restore();
                 });
                 
-                // Vẽ hạt chính
                 ctx.save();
                 ctx.globalAlpha = this.alpha / 255;
                 ctx.fillStyle = `rgb(${Math.floor(this.color[0])}, ${Math.floor(this.color[1])}, ${Math.floor(this.color[2])})`;
@@ -747,17 +683,16 @@
             }
         }
         
-        // Lớp hạt trái tim mưa sao băng
         class FallingHeartParticle {
             constructor() {
                 this.reset();
             }
             
             reset() {
-                this.x = Math.random() * (WIDTH + 200) - 100; // Bắt đầu từ ngoài màn hình một chút
-                this.y = -20; // Bắt đầu từ phía trên màn hình
-                this.vx = (Math.random() - 0.7) * 2; // Hơi bay sang trái
-                this.vy = Math.random() * 3 + 2; // Tốc độ rơi
+                this.x = Math.random() * (WIDTH + 200) - 100;
+                this.y = -20;
+                this.vx = (Math.random() - 0.7) * 2;
+                this.vy = Math.random() * 3 + 2;
                 this.size = Math.random() * 12 + 8;
                 this.color = randomChoice([PINK, LIGHT_PINK, HOT_PINK], [0.4, 0.4, 0.2]);
                 this.rotation = Math.random() * Math.PI * 2;
@@ -776,7 +711,6 @@
                 this.twinkle += 0.15;
                 this.life -= 1;
                 
-                // Thêm vệt đuôi
                 this.trail.push({
                     x: this.x,
                     y: this.y,
@@ -784,12 +718,10 @@
                     alpha: this.alpha * 0.3
                 });
                 
-                // Giới hạn độ dài vệt đuôi
                 if (this.trail.length > 8) {
                     this.trail.shift();
                 }
                 
-                // Nếu ra khỏi đáy màn hình, đặt lại lên đỉnh
                 if (this.y > HEIGHT + 50 || this.x < -100 || this.x > WIDTH + 100 || this.life <= 0) {
                     this.reset();
                 }
@@ -798,7 +730,6 @@
             }
             
             draw(ctx) {
-                // Vẽ vệt đuôi
                 this.trail.forEach((point, index) => {
                     const trailAlpha = point.alpha * (index + 1) / this.trail.length;
                     const trailSize = point.size * (index + 1) / this.trail.length;
@@ -820,7 +751,6 @@
                     ctx.restore();
                 });
                 
-                // Vẽ trái tim chính
                 const twinkleEffect = 0.8 + 0.2 * Math.sin(this.twinkle);
                 
                 ctx.save();
@@ -829,7 +759,6 @@
                 ctx.rotate(this.rotation);
                 ctx.scale(this.size / 10, this.size / 10);
                 
-                // Hình trái tim
                 ctx.fillStyle = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
                 ctx.beginPath();
                 ctx.moveTo(0, 3);
@@ -839,7 +768,6 @@
                 ctx.bezierCurveTo(10, 1, 5, -2, 0, 3);
                 ctx.fill();
                 
-                // Hiệu ứng phát sáng
                 ctx.globalAlpha = this.alpha * twinkleEffect * 0.3;
                 ctx.shadowColor = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
                 ctx.shadowBlur = 15;
@@ -849,7 +777,6 @@
             }
         }
         
-        // Lớp hạt ngôi sao khi chạm
         class ClickStarParticle {
             constructor(x, y) {
                 this.x = x + (Math.random() - 0.5) * 100;
@@ -868,8 +795,8 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += 0.1; // Trọng lực
-                this.vx *= 0.99; // Lực cản
+                this.vy += 0.1;
+                this.vx *= 0.99;
                 this.life -= 1;
                 this.rotation += this.rotationSpeed;
                 this.twinkle += 0.2;
@@ -886,11 +813,9 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 
-                // Vẽ hình ngôi sao
                 ctx.fillStyle = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
                 ctx.beginPath();
                 
-                // Sao 5 cánh
                 for (let i = 0; i < 5; i++) {
                     const angle = (i * Math.PI * 2) / 5 - Math.PI / 2;
                     const x = Math.cos(angle) * this.size;
@@ -906,7 +831,6 @@
                 ctx.closePath();
                 ctx.fill();
                 
-                // Thêm hiệu ứng phát sáng
                 ctx.globalAlpha = twinkleAlpha * 0.3;
                 ctx.shadowColor = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
                 ctx.shadowBlur = 10;
@@ -916,7 +840,6 @@
             }
         }
         
-        // Lớp hạt trái tim khi chạm
         class ClickHeartParticle {
             constructor(x, y) {
                 this.x = x + (Math.random() - 0.5) * 50;
@@ -934,8 +857,8 @@
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += 0.15; // Trọng lực
-                this.vx *= 0.98; // Lực cản
+                this.vy += 0.15;
+                this.vx *= 0.98;
                 this.life -= 1;
                 this.rotation += this.rotationSpeed;
                 
@@ -951,7 +874,6 @@
                 ctx.rotate(this.rotation);
                 ctx.scale(this.size / 10, this.size / 10);
                 
-                // Vẽ hình trái tim
                 ctx.fillStyle = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
                 ctx.beginPath();
                 ctx.moveTo(0, 3);
@@ -961,7 +883,6 @@
                 ctx.bezierCurveTo(10, 1, 5, -2, 0, 3);
                 ctx.fill();
                 
-                // Thêm hiệu ứng phát sáng
                 ctx.globalAlpha = alpha * 0.3;
                 ctx.shadowColor = `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
                 ctx.shadowBlur = 8;
@@ -971,7 +892,6 @@
             }
         }
         
-        // Khởi tạo hệ thống hạt
         const particles = [];
         for (let i = 0; i < 3000; i++) {
             particles.push(new Particle());
@@ -981,14 +901,12 @@
         let dropParticles = [];
         let clickStars = [];
         let clickHearts = [];
-        let fallingHearts = []; // Mới: mảng trái tim rơi
+        let fallingHearts = [];
         
-        // Khởi tạo trái tim rơi
-        for (let i = 0; i < 15; i++) { // 15 trái tim, nhẹ hiệu năng
+        for (let i = 0; i < 15; i++) {
             fallingHearts.push(new FallingHeartParticle());
         }
         
-        // Xử lý sự kiện bàn phím
         document.addEventListener('keydown', (e) => {
             keys[e.code] = true;
         });
@@ -997,29 +915,24 @@
             keys[e.code] = false;
         });
         
-        // Xử lý sự kiện chạm
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            // Tạo hạt ngôi sao
             for (let i = 0; i < 15; i++) {
                 clickStars.push(new ClickStarParticle(x, y));
             }
             
-            // Tạo hạt trái tim
             for (let i = 0; i < 8; i++) {
                 clickHearts.push(new ClickHeartParticle(x, y));
             }
         });
         
-        // Vòng lặp animation chính
         function animate(currentTime) {
             const deltaTime = currentTime - lastTime;
             lastTime = currentTime;
             
-            // Xử lý input bàn phím
             if (keys['ArrowLeft']) {
                 angleY -= 0.05;
             }
@@ -1027,23 +940,19 @@
                 angleY += 0.05;
             }
             
-            // Tự động xoay và đập
             angleY += 0.01;
             
-            // Tăng hiệu ứng đập - kết hợp sóng phức tạp hơn
             const time = currentTime * 0.001;
-            const heartbeat1 = Math.sin(time * 4) * 0.15; // Nhịp tim chính
-            const heartbeat2 = Math.sin(time * 8) * 0.05; // Nhịp tim phụ
-            const slowPulse = Math.sin(time * 1.5) * 0.1; // Xung chậm
+            const heartbeat1 = Math.sin(time * 4) * 0.15;
+            const heartbeat2 = Math.sin(time * 8) * 0.05;
+            const slowPulse = Math.sin(time * 1.5) * 0.1;
             const prevPulse = pulse;
             pulse = 0.85 + heartbeat1 + heartbeat2 + slowPulse;
             morph = getMorph(time);
                
-            // Phát hiện đỉnh nhịp tim và phát âm thanh - sửa ở đây
             if (audioContext && pulse > heartbeatThreshold && prevPulse <= heartbeatThreshold) {
                 const timeSinceLastBeat = currentTime - lastHeartbeatTime;
-                if (timeSinceLastBeat > 400) { // Tránh phát âm thanh quá dày
-                    // Chọn ngẫu nhiên loại âm thanh nhịp tim
+                if (timeSinceLastBeat > 400) {
                     const heartbeatType = Math.floor(Math.random() * 3);
                     switch(heartbeatType) {
                         case 0:
@@ -1060,50 +969,40 @@
                 }
             }
 
-            // Xóa canvas
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, WIDTH, HEIGHT);
             
-            // Thêm hiệu ứng gradient
             ctx.save();
             ctx.globalAlpha = 0.1;
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, WIDTH, HEIGHT);
             ctx.restore();
             
-            // Tạo hạt ngân hà mới
             if (Math.random() < 0.6) {
                 galaxyParticles.push(new GalaxyParticle());
             }
             
-            // Tạo hạt rơi mới
             if (dropParticles.length < 300 && Math.random() < 0.95) {
                 dropParticles.push(new ParticleDrop(particles, angleY, pulse));
             }
             
-            // Cập nhật và vẽ hạt ngân hà
             galaxyParticles = galaxyParticles.filter(p => p.update());
             galaxyParticles.forEach(p => p.draw(ctx));
             
-            // Cập nhật và vẽ hạt rơi
             dropParticles = dropParticles.filter(p => p.update());
             dropParticles.forEach(p => p.draw(ctx));
             
-            // Cập nhật và vẽ mưa sao băng trái tim
             fallingHearts.forEach(heart => {
                 heart.update();
                 heart.draw(ctx);
             });
             
-            // Cập nhật và vẽ sao khi chạm
             clickStars = clickStars.filter(star => star.update());
             clickStars.forEach(star => star.draw(ctx));
             
-            // Cập nhật và vẽ tim khi chạm
             clickHearts = clickHearts.filter(heart => heart.update());
             clickHearts.forEach(heart => heart.draw(ctx));
             
-            // Vẽ hạt trái tim
             particles.forEach(particle => {
                 particle.draw(ctx, angleY, pulse);
             });
@@ -1111,7 +1010,6 @@
             requestAnimationFrame(animate);
         }
 
-        // Nhạc nền: thử tự phát ngay; nếu trình duyệt chặn thì phát ở lần chạm/nhấn phím đầu tiên
         const bgMusic = document.getElementById('bgMusic');
         const tapHint = document.getElementById('tapHint');
         const unlockEvents = ['click', 'touchend', 'keydown'];
@@ -1130,7 +1028,6 @@
                 .then(onMusicStarted)
                 .catch(err => {
                     console.warn('Chưa phát được nhạc:', err.name, err.message);
-                    // Không có/không đọc được file nhạc thì dùng âm thanh nhịp tim
                     if (err.name === 'NotSupportedError' && navigator.userActivation?.isActive) {
                         initAudioWithFeedback();
                     }
@@ -1140,7 +1037,6 @@
         unlockEvents.forEach(evt => document.addEventListener(evt, tryPlayMusic));
         tryPlayMusic();
 
-        // Bắt đầu animation
         requestAnimationFrame(animate);
     </script>
 </body>
